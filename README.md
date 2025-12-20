@@ -1,4 +1,3 @@
-```md
 # AI Contact Outreach App
 
 AI Contact Outreach App is an interactive lab-style application that turns a natural language prompt into organizations, roles, contacts, and personalized outreach drafts.
