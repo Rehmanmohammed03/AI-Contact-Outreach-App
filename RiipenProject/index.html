@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Outreach Lab</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="pill">alpha</span>
+        <div>
+          <div class="brand-title">Contact Outreach Lab</div>
+          <div class="brand-subtitle">Prompt → analysis → contacts → drafts</div>
+        </div>
+      </div>
+      <div class="mode-switch">
+        <label class="toggle">
+          <input type="radio" name="mode" value="auto" checked>
+          <span>Auto pipeline</span>
+        </label>
+        <label class="toggle">
+          <input type="radio" name="mode" value="step">
+          <span>Stage by stage</span>
+        </label>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel" id="prompt-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">1. Prompt</p>
+            <h2>Describe who you want to meet</h2>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="prefill-btn">Use sample prompt</button>
+          </div>
+        </div>
+        <form id="prompt-form">
+          <textarea id="prompt-input" rows="4" placeholder="Example: I want to talk to people working on AI safety policy in Canada about internships."></textarea>
+          <div class="form-row">
+            <div class="field">
+              <label for="tone-select">Tone</label>
+              <select id="tone-select">
+                <option value="semi_formal">Semi-formal</option>
+                <option value="formal">Formal</option>
+                <option value="casual">Casual</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="channel-select">Channel</label>
+              <select id="channel-select">
+                <option value="email">Email</option>
+                <option value="linkedin">LinkedIn</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="max-contacts">Max contacts</label>
+              <input type="number" id="max-contacts" min="5" max="30" value="15">
+            </div>
+          </div>
+          <div class="button-row">
+            <button type="submit" class="primary" id="run-btn">Run flow</button>
+            <button type="button" class="ghost" id="reset-btn">Reset</button>
+          </div>
+          <p class="hint" id="mode-hint">Auto mode runs analysis → contacts → drafts in one go.</p>
+        </form>
+      </section>
+
+      <section class="panel" id="profile-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">2. Your profile</p>
+            <h2>Give the system context</h2>
+          </div>
+        </div>
+        <form id="profile-form">
+          <div class="form-row">
+            <div class="field">
+              <label for="profile-name">Name</label>
+              <input id="profile-name" name="name" placeholder="Rehman">
+            </div>
+            <div class="field">
+              <label for="profile-role">Current role</label>
+              <input id="profile-role" name="current_role" placeholder="Computer engineering student">
+            </div>
+            <div class="field">
+              <label for="profile-goals">Goals</label>
+              <input id="profile-goals" name="goals" placeholder="Learn about AI safety policy careers">
+            </div>
+          </div>
+          <div class="field">
+            <label for="profile-summary">Summary</label>
+            <textarea id="profile-summary" name="summary" rows="3" placeholder="Short sentence about your background."></textarea>
+          </div>
+          <div class="field">
+            <label>Experience highlights</label>
+            <div class="chips" id="highlight-chips"></div>
+            <div class="chip-input">
+              <input id="highlight-input" placeholder="Add a highlight and press Enter">
+            </div>
+          </div>
+          <div class="field upload">
+            <label for="profile-upload">Upload profile (txt/markdown)</label>
+            <input type="file" id="profile-upload" accept=".txt,.md,.markdown">
+            <p class="hint">Content is read locally and merged into your summary. No backend required.</p>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" id="analysis-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">3. Analysis</p>
+            <h2>Organizations, roles, and rationale</h2>
+          </div>
+          <div class="actions">
+            <span class="pill muted" id="analysis-status">Waiting for prompt</span>
+          </div>
+        </div>
+        <div class="analysis-grid">
+          <div class="analysis-block">
+            <div class="block-header">
+              <h3>Organizations</h3>
+              <div class="chip-input tight">
+                <input id="org-input" placeholder="Add organization">
+              </div>
+            </div>
+            <div id="org-list" class="list"></div>
+          </div>
+          <div class="analysis-block">
+            <div class="block-header">
+              <h3>Roles</h3>
+              <div class="chip-input tight">
+                <input id="role-input" placeholder="Add role">
+              </div>
+            </div>
+            <div id="role-list" class="list"></div>
+          </div>
+          <div class="analysis-block">
+            <div class="block-header">
+              <h3>Context</h3>
+            </div>
+            <div id="analysis-summary" class="summary"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" id="contacts-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">4. Contacts</p>
+            <h2>Select who to reach</h2>
+          </div>
+          <div class="actions">
+            <button class="ghost" id="search-contacts-btn">Search contacts</button>
+          </div>
+        </div>
+        <div class="filters">
+          <div class="field">
+            <label for="seniority-filter">Seniority</label>
+            <select id="seniority-filter" multiple>
+              <option value="junior">Junior</option>
+              <option value="mid">Mid</option>
+              <option value="senior">Senior</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="country-filter">Country filter</label>
+            <input id="country-filter" placeholder="Canada, US">
+          </div>
+        </div>
+        <div id="contacts-list" class="contacts"></div>
+      </section>
+
+      <section class="panel" id="drafts-panel">
+        <div class="panel-header">
+          <div>
+            <p class="eyebrow">5. Drafts</p>
+            <h2>Review and edit outreach</h2>
+          </div>
+          <div class="actions">
+            <button class="primary" id="generate-drafts-btn">Generate drafts</button>
+          </div>
+        </div>
+        <div id="drafts-list" class="drafts"></div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast hidden"></div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
