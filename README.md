@@ -1,4 +1,3 @@
-````md
 # Contact Outreach Lab
 
 **Contact Outreach Lab** is a contact discovery and outreach drafting application that helps users identify relevant professionals for a given domain or goal and generate tailored outreach messages. It supports both an end-to-end automated flow and a stage-by-stage, user-in-the-loop workflow.
