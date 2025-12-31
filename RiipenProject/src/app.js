@@ -1,8 +1,13 @@
 import { mockApi } from './mockApi.js';
 
-// Toggle to use backend. Backend base defaults to http://localhost:4000.
+// Toggle to use backend. Backend base defaults to same origin (or 4000 for file://).
 const USE_BACKEND = true;
-const BACKEND_BASE = window.BACKEND_BASE || 'http://localhost:4000';
+const BACKEND_BASE = (() => {
+  if (window.BACKEND_BASE) return window.BACKEND_BASE;
+  const origin = window.location.origin || '';
+  if (origin.startsWith('file')) return 'http://localhost:4000';
+  return origin;
+})();
 
 const backendApi = {
   async searchContacts(payload) {
