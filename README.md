@@ -224,32 +224,6 @@ The application will be available at:
 ```text
 http://localhost:4000
 ```
-
----
-
-## Frontend-Only Mode
-
-* Open `index.html` directly in a browser
-* Or serve locally:
-
-```bash
-python -m http.server 3000
-```
-
-Then visit:
-
-```text
-http://localhost:3000
-```
-
-To force mock data:
-
-```js
-USE_BACKEND = false
-```
-
-in `app.js`.
-
 ---
 
 ## Behavior Without an API Key
