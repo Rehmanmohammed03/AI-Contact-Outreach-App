@@ -1,93 +1,240 @@
-# AI Contact Outreach App
+````md
+# Contact Outreach Lab
 
-AI Contact Outreach App is an interactive lab-style application that turns a natural language prompt into organizations, roles, contacts, and personalized outreach drafts.
+**Contact Outreach Lab** is a contact discovery and outreach drafting application that helps users identify relevant professionals for a given domain or goal and generate tailored outreach messages. It supports both an end-to-end automated flow and a stage-by-stage, user-in-the-loop workflow.
 
-The project demonstrates an end-to-end outreach workflow using a lightweight frontend and an optional AI-powered backend. It is designed for experimentation, demos, and rapid iteration rather than production deployment.
-
----
-
-## What This App Does
-
-The app guides a user through the following pipeline:
-
-```
-
-Prompt -> Analysis -> Contacts -> Drafts
-
-````
-
-Users can either run the entire flow automatically or step through each stage and edit results along the way.
+The project is intentionally built as a lightweight prototype. The current implementation focuses on frontend UX and a minimal backend, while the technical design outlines a scalable, production-ready architecture.
 
 ---
 
-## Key Features
+## Goals and Scope
 
-- Prompt-driven outreach workflow  
-- Auto pipeline mode and stage-by-stage mode  
-- Editable organizations and roles  
-- Contact filtering by seniority and country  
-- AI-assisted contact generation using OpenAI (optional backend)  
-- Outreach draft generation with tone and channel controls  
-- Inline editing and copy-to-clipboard  
-- User profile context and local file upload for personalization  
-- Frontend works without any build step  
+The application enables a user to:
+
+- Enter a free-form prompt describing a domain, industry, or goal  
+  Example. *“I want to talk to people working on AI safety policy in Canada.”*
+
+- Receive:
+  - A breakdown of relevant domains, organizations, roles, and regions
+  - Justification for why those contacts are relevant
+  - A list of 10–20 specific contacts with LinkedIn and email when available
+
+- Provide a short profile or upload a profile file
+
+- Generate personalized email or LinkedIn outreach drafts for selected contacts
+
+---
+
+## Supported Modes
+
+### Automated Mode
+Prompt → analysis → contacts → drafts with minimal user interaction
+
+### Stage-by-Stage Mode
+Users review and adjust results at each step before proceeding
 
 ---
 
 ## Tech Stack
 
 ### Frontend
-- Plain HTML, CSS, and JavaScript  
-- No frameworks  
-- No build tooling  
-- Fully client-side  
-- Responsive dark UI  
+- Vanilla HTML, CSS, and JavaScript
+- Single-page layout with no build step
+- Mocked analysis and draft generation for fast iteration
 
-### Backend (Optional)
-- Node.js  
-- Express  
-- OpenAI API  
-- CORS enabled  
-- JSON-based API  
+### Backend
+- Node.js with Express
+- Serves static frontend assets
+- Exposes a `/api/contacts` endpoint
+
+### AI Integration
+- Google Gemini via `@google/generative-ai`
+- Defaults to `gemini-1.5-flash`, configurable via `GEMINI_MODEL`
+- Automatic mock fallback when no API key is set
+
+### Tooling
+- npm for dependency management
+- dotenv for environment configuration
 
 ---
 
-## Project Structure
+## Key Files
 
-```text
-ai-contact-outreach-app/
-├── index.html          # Single-page UI
-├── styles.css          # Styling and layout
-├── src/
-│   ├── app.js          # UI state and workflow logic
-│   └── mockApi.js      # Local mock analysis, contacts, and drafts
-├── server.js           # Optional Express backend using OpenAI
-├── package.json        # Backend dependencies
-└── README.md
+- **index.html**  
+  Page layout with panels for prompt input, user profile, analysis output, contact list, and outreach drafts
+
+- **styles.css**  
+  Dark, expressive styling with responsive grid layouts, cards, and chip-based UI elements
+
+- **app.js**  
+  Frontend state and UI logic
+  - Central state object for mode, prompt, profile, organizations, roles, contacts, drafts, and selections
+  - Automated vs staged workflow handling
+  - Calls `/api/contacts`
+  - Uses mock APIs for analysis and draft generation
+  - `USE_BACKEND` toggle for frontend-only mode
+  - `BACKEND_BASE` resolves to same-origin or `http://localhost:4000` when running via `file://`
+
+- **mockApi.js**  
+  Mock implementations for prompt analysis, contact search, and outreach draft generation
+
+- **server.js**  
+  Express server that:
+  - Serves the static frontend
+  - Provides the `/api/contacts` endpoint
+  - Uses Gemini if `GEMINI_API_KEY` or `GOOGLE_API_KEY` is set
+  - Returns mock contacts otherwise
+  - Falls back to serving `index.html` for non-API routes
+
+- **package.json**  
+  Project scripts and dependencies
+  - Scripts include `npm start` and `npm run dev:server`
+  - Dependencies include `express`, `cors`, `dotenv`, and `@google/generative-ai`
+
+---
+
+## Architecture Overview
+
+### Application Shape
+
+The application is a single-page, vanilla JavaScript frontend served by a minimal Express backend. There is no build step. Static frontend assets live alongside `server.js` and are served directly by Express.
+
+### Entry Points
+
+- **Frontend**  
+  `index.html` loads `styles.css` and `app.js`
+
+- **Backend**  
+  `server.js` runs Express, serves static files, and exposes `/api/contacts`
+
+---
+
+### Frontend Data Flow (`app.js`)
+
+- A central state object tracks:
+  - Workflow mode (automated or staged)
+  - Prompt and user profile
+  - Organizations and roles
+  - Contacts and selected contacts
+  - Outreach drafts
+  - Loading and UI state flags
+
+- API routing logic:
+  - `USE_BACKEND` toggle controls backend usage
+  - `BACKEND_BASE` resolves automatically to same-origin or `http://localhost:4000` when opened via `file://`
+
+- Workflow behavior:
+  - Automated mode chains analysis → contact search → draft generation
+  - Stage-by-stage mode allows individual steps to be executed independently
+
+- Prompt analysis and outreach drafts are generated locally using mock logic
+- Contact search is routed to the backend when enabled
+
+- Rendering functions update the DOM for:
+  - Analysis cards
+  - Contact lists
+  - Draft editors
+  - Profile highlights
+
+- Event handlers manage:
+  - Adding and removing organizations and roles
+  - Contact filters (country, seniority)
+  - Profile uploads and merges
+  - Contact selection
+  - Copy-to-clipboard actions
+
+---
+
+### Mock Logic (`mockApi.js`)
+
+- Provides:
+  - `analyzePrompt`
+  - `searchContacts`
+  - `generateOutreachBatch`
+
+- Returns synthetic data with simulated delays
+- Used when the backend is disabled or for non-contact steps such as analysis and draft generation
+
+---
+
+### Backend (`server.js`)
+
+- **Static serving**
+  - Serves frontend files from the repository root
+  - Falls back to `index.html` for non-API routes
+
+- **API**
+  - `POST /api/contacts`
+  - Uses Gemini when `GEMINI_API_KEY` or `GOOGLE_API_KEY` is set
+  - Normalizes the model’s JSON response
+  - Returns mock contacts via a local helper when no API key is present
+
+- **AI Provider**
+  - `@google/generative-ai`
+  - Model defaults to `gemini-1.5-flash`
+  - Override via `GEMINI_MODEL`
+
+---
+
+### Configuration
+
+- Optional `.env` file:
+  - `GEMINI_API_KEY` or `GOOGLE_API_KEY`
+  - `GEMINI_MODEL`
+
+- npm scripts:
+  - `npm start`
+  - `npm run dev:server`
+
+---
+
+### Deployment and Runtime
+
+- A single Node.js process serves both frontend and backend
+- Runs on `$PORT` with a default of `4000`
+- Frontend calls same-origin `/api/contacts` to avoid CORS issues
+- Mock fallbacks ensure the UI remains fully functional without API keys
+
+---
+
+## Setup and Run
+
+### Install
+```bash
+npm install
 ````
 
+### Environment Variables (Optional)
+
+```env
+GEMINI_API_KEY=your_api_key_here
+# or
+GOOGLE_API_KEY=your_api_key_here
+
+GEMINI_MODEL=gemini-1.5-flash
+```
+
+### Run Frontend and Backend
+
+```bash
+npm start
+```
+
+The application will be available at:
+
+```text
+http://localhost:4000
+```
+
 ---
 
-## Running the Frontend Only
+## Frontend-Only Mode
 
-The frontend works completely on its own using mock data.
-
-### Option 1. Open directly
-
-* Open `index.html` in your browser
-
-### Option 2. Use a local static server (recommended)
-
-**Python**
+* Open `index.html` directly in a browser
+* Or serve locally:
 
 ```bash
 python -m http.server 3000
-```
-
-**Node**
-
-```bash
-npx serve .
 ```
 
 Then visit:
@@ -96,121 +243,23 @@ Then visit:
 http://localhost:3000
 ```
 
----
+To force mock data:
 
-## Running the Backend (AI-Powered Contacts)
-
-The backend enhances the contact search using OpenAI.
-
-### 1. Install dependencies
-
-```bash
-npm install
+```js
+USE_BACKEND = false
 ```
 
-### 2. Create a `.env` file at the project root
-
-```env
-OPENAI_API_KEY=sk-your-key-here
-# Optional model override
-# OPENAI_MODEL=gpt-4o-mini
-```
-
-### 3. Start the server
-
-```bash
-npm run dev:server
-```
-
-The backend runs at:
-
-```text
-http://localhost:4000
-```
-
-The frontend is already wired to call the backend for contact search.
-You can disable backend usage by toggling the `USE_BACKEND` flag in `src/app.js`.
+in `app.js`.
 
 ---
 
-## Backend API
+## Behavior Without an API Key
 
-### POST `/api/contacts`
-
-Generates AI-assisted contact suggestions.
-
-**Request**
-
-```json
-{
-  "prompt": "I want to talk to people working on AI safety policy in Canada",
-  "organizations": [],
-  "roles": [],
-  "max_contacts": 15,
-  "user_profile": {
-    "name": "Rehman",
-    "current_role": "Computer engineering student",
-    "goals": "Learn about AI safety policy careers"
-  }
-}
-```
-
-**Response**
-
-```json
-{
-  "contacts": [
-    {
-      "id": "ai_contact_1",
-      "name": "Alex Chen",
-      "title": "Policy Analyst",
-      "organization": "Government of Canada",
-      "country": "Canada",
-      "linkedin_url": "",
-      "email": "",
-      "email_confidence": 0.6,
-      "source": "chatgpt",
-      "relevance_score": 0.7
-    }
-  ]
-}
-```
+* Backend automatically returns mock contacts
+* Application remains fully functional
+* Analysis and outreach drafts are mock-generated on the frontend
 
 ---
-
-## Typical Usage Flow
-
-1. Enter a prompt describing who you want to reach
-2. Choose tone, channel, and max contacts
-3. Add optional profile context or upload a text file
-4. Run the flow in auto or stage-by-stage mode
-5. Review and edit organizations and roles
-6. Search for contacts
-7. Generate and edit outreach drafts
-
-All edits happen instantly in the browser.
-
----
-
-## Limitations
-
-* Contact data may be synthetic when using AI
-* No authentication or user accounts
-* No persistence or database
-* No automated sending of emails or LinkedIn messages
-* Intended as a lab and prototype rather than a production app
-
----
-
-## Future Improvements
-
-* Integrate real contact discovery APIs
-* Persist workflows and drafts
-* Add email and LinkedIn sending
-* Support outreach sequences
-* Add contact scoring and deduplication
-* Add user authentication and saved projects
-* Export drafts to CSV, Markdown, or CRM tools
 
 ```
 ```
